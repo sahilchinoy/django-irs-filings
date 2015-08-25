@@ -1,5 +1,6 @@
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import dj_database_url
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR,'irs','data')
@@ -13,8 +14,6 @@ SECRET_KEY = 't)b^x87f6^qd*93_-^p)5=0(3k0t2_j#)9q@eep_gfeobjb3y1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -65,13 +64,13 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
+"""DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'irs',
         'USER': 'sahilchinoy',
     }
-}
+}"""
 
 
 # Internationalization
@@ -87,8 +86,20 @@ USE_L10N = True
 
 USE_TZ = False
 
+# Parse database configuration from $DATABASE_URL
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.8/howto/static-files/
+DATABASES = {}
+DATABASES['default'] = dj_database_url.config(default='postgres://localhost/irs?user=sahilchinoy')
 
+# Honor the 'X-Forwarded-Proto' header for request.is_secure()
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Allow all host headers
+ALLOWED_HOSTS = ['*']
+
+STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
