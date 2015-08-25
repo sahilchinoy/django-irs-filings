@@ -1,0 +1,18 @@
+model_name,field_name,field_type,position
+record_type,Record Type,C,0
+form_id_number,Form ID Number,C,1
+schedule_b_id,SCHED B ID,C,2
+organization_name,ORG NAME,C,3
+EIN,EIN,C,4
+recipient_name,RECIEPIENT NAME,C,5
+recipient_address_line_1,RECIEPIENT ADDRESS 1,C,6
+recipient_address_line_2,RECIEPIENT ADDRESS 2,C,7
+recipient_address_city,RECIEPIENT ADDRESS CITY,C,8
+recipient_address_state,RECIEPIENT ADDRESS ST,C,9
+recipient_address_zip_code,RECIEPIENT ADDRESS ZIP CODE,C,10
+recipient_address_zip_ext,RECIEPIENT ADDRESS ZIP EXT,C,11
+recipient_employer,RECIEPIENT EMPLOYER,C,12
+expenditure_amount,EXPENDITURE AMOUNT,N,13
+recipient_occupation,RECIPIENT OCCUPATION,C,14
+expenditure_date,EXPENDITURE DATE,D,15
+expenditure_purpose,EXPENDITURE PURPOSE,C,16

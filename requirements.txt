@@ -1,0 +1,7 @@
+Django==1.8.3
+future==0.15.0
+Metafone==0.5
+probablepeople==0.3.1
+psycopg2==2.6.1
+python-crfsuite==0.8.3
+wheel==0.24.0

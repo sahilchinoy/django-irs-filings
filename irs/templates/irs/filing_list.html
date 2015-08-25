@@ -1,0 +1,67 @@
+{% extends 'irs/base.html' %}
+
+{% load humanize %}
+
+{% block title %}
+Filings | IRS Itemizer
+{% endblock %}
+
+{% block content %}
+	<h2>IRS Itemizer</h2>
+	<h3>{{ page_obj.paginator.count | intcomma }} filings</h3>
+	{% if is_paginated %}
+        <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}">&larr;</a>
+                {% else %}
+                	&larr;
+                {% endif %}
+                <span class="page-current">
+                    Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">&rarr;</a>
+                {% else %}
+                	&rarr;
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+	<table class="table">
+	<thead>
+		<tr>
+			<th style="width: 5%">ID</th>
+			<th style="width: 5%">Type</th>
+			<th style="width: 51%">Committee</th>
+			<th style="width: 12%">Start</th>
+			<th style="width: 12%">End</th>
+			<th style="width: 10%">Contributions</th>
+			<th style="width: 10%">Expenditures</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for filing in object_list %}
+		<tr>
+			<td>{{ filing.form_id_number }}</td>
+			<td>{{ filing.form_type }}</td>
+			<td><a href="{% url 'committee' filing.EIN %}">{{ filing.organization_name }}</a></td>
+			<td>{{ filing.begin_date }}</td>
+			<td>{{ filing.end_date }}</td>
+			<td>
+				{% if filing.schedule_a_indicator == 0 %}
+				<a href="{% url 'sa' filing.form_id_number %}">${{ filing.schedule_a_total | intcomma }}</a>
+				{% endif %}
+			</td>
+			<td>
+				{% if filing.schedule_b_indicator == 0 %}
+				<a href="{% url 'sb' filing.form_id_number %}">${{ filing.schedule_b_total | intcomma }}</a>
+				{% endif %}
+			</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+	</table>
+
+	
+{% endblock %}

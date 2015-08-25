@@ -1,0 +1,45 @@
+{% extends 'irs/base.html' %}
+
+{% load humanize %}
+
+{% block title %}
+{{ object.name }} | IRS Itemizer
+{% endblock %}
+
+{% block content %}
+	<h4><a href="{% url 'filings' %}">Back to filings</a></h4>
+	<h2>{{ object.name }}</h2>
+	<hr>
+	<table class="table">
+	<thead>
+		<tr>
+			<th style="width: 5%">Filing</th>
+			<th style="width: 5%">Amended by</th>
+			<th style="width: 5%">Type</th>
+			<th style="width: 10%">Begin date</th>
+			<th style="width: 10%">End date</th>
+			<th style="width: 10%">Contributions</th>
+			<th style="width: 10%">Expenditures</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for filing in object.filings.all %}
+		<tr>
+			<td>{{ filing.form_id_number }}</td>
+			<td>
+			{% if filing.is_amended %}
+				{{ filing.amended_by.form_id_number }}
+			{% endif %}
+			</td>
+			<td>{{ filing.form_type }}</td>
+			<td>{{ filing.begin_date }}</td>
+			<td>{{ filing.end_date }}</td>
+			<td><a href="{% url 'sa' filing.form_id_number %}">${{ filing.schedule_a_total | intcomma }}</a></td>
+			<td><a href="{% url 'sb' filing.form_id_number %}">${{ filing.schedule_b_total | intcomma }}</a></td>
+		</tr>
+		{% endfor %}
+	</tbody>
+	</table>
+
+	
+{% endblock %}

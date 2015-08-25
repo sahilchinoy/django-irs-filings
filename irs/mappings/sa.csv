@@ -1,0 +1,18 @@
+model_name,field_name,field_type,position
+record_type,Record Type,C,0
+form_id_number,Form ID Number,C,1
+schedule_a_id,SCHED A ID,C,2
+organization_name,ORG NAME,C,3
+EIN,EIN,C,4
+contributor_name,CONTRIBUTOR NAME,C,5
+contributor_address_line_1,CONTRIBUTOR ADDRESS 1,C,6
+contributor_address_line_2,CONTRIBUTOR ADDRESS 2,C,7
+contributor_address_city,CONTRIBUTOR ADDRESS CITY,C,8
+contributor_address_state,CONTRIBUTOR ADDRESS STATE,C,9
+contributor_address_zip_code,CONTRIBUTOR ADDRESS ZIP CODE,C,10
+contributor_address_zip_ext,CONTRIBUTOR ADDRESS ZIP EXT,C,11
+contributor_employer,CONTRIBUTOR EMPLOYER,C,12
+contribution_amount,CONTRIBUTION AMOUNT,N,13
+contributor_occupation,CONTRIBUTOR OCCUPATION,C,14
+agg_contribution_ytd,AGG CONTRIBUTION YTD,N,15
+contribution_date,CONTRIBUTION DATE,D,16

@@ -1,0 +1,50 @@
+model_name,field_name,field_type,position
+record_type,Record Type,C,0
+form_type,Form Type,C,1
+form_id_number,Form ID Number,C,2
+begin_date,PERIOD Begin Date,D,3
+end_date,PERIOD End Date,D,4
+initial_report_indicator,Initial Report Indicator,I,5
+amended_report_indicator,Amended Report Indicator,I,6
+final_report_indicator,Final Report Indicator,I,7
+change_of_address_indicator,Change of Address Indicator,I,8
+organization_name,ORGANIZATION NAME,C,9
+EIN,EIN,C,10
+mailing_address_line_1,MAILING ADDRESS 1,C,11
+mailing_address_line_2,MAILING ADDRESS 2,C,12
+mailing_address_city,MAILING ADDRESS CITY,C,13
+mailing_address_state,MAILING ADDRESS STATE,C,14
+mailing_address_zip_code,MAILING ADDRESS ZIP CODE,C,15
+mailing_address_zip_ext,MAILING ADDRESS ZIP EXT,C,16
+email,E_MAIL ADDRESS,C,17
+org_formation_date,ORG FORMATION DATE,D,18
+custodian_name,CUSTODIAN NAME,C,19
+custodian_address_line_1,CUSTODIAN ADDRESS 1,C,20
+custodian_address_line_2,CUSTODIAN ADDRESS 2,C,21
+custodian_address_city,CUSTODIAN ADDRESS CITY,C,22
+custodian_address_state,CUSTODIAN ADDRESS STATE,C,23
+custodian_address_zip_code,CUSTODIAN ADDRESS ZIP CODE,C,24
+custodian_address_zip_ext,CUSTODIAN ADDRESS ZIP EXT,C,25
+contact_name,CONTACT PERSON NAME,C,26
+contact_address_line_1,CONTACT ADDRESS 1,C,27
+contact_address_line_2,CONTACT ADDRESS 2,C,28
+contact_address_city,CONTACT ADDRESS CITY,C,29
+contact_address_state,CONTACT ADDRESS STATE,C,30
+contact_address_zip_code,CONTACT ADDRESS ZIP CODE,C,31
+contact_address_zip_ext,CONTACT ADDRESS ZIP EXT,C,32
+business_address_line_1,BUSINESS ADDRESS 1,C,33
+business_address_line_2,BUSINESS ADDRESS 2,C,34
+business_address_city,BUSINESS ADDRESS CITY,C,35
+business_address_state,BUSINESS ADDRESS STATE,C,36
+business_address_zip_code,BUSINESS ADDRESS ZIP CODE,C,37
+business_address_zip_ext,BUSINESS ADDRESS ZIP EXT,C,38
+quarter_indicator,QTR INDICATOR,I,39
+monthly_report_month,MONTHLY RPT MONTH,C,40
+pre_election_type,PRE ELECT TYPE,C,41
+election_date,PRE or POST ELECT DATE,D,42
+election_state,PRE or POST ELECT STATE,C,43
+schedule_a_indicator,SCHED_A_IND,I,44
+schedule_a_total,TOTAL_SCHED_A,N,45
+schedule_b_indicator,SCHED_B_IND,I,46
+schedule_b_total,TOTAL_SCHED_B,N,47
+insert_datetime,INSERT_DATETIME,C,48

@@ -1,21 +1,12 @@
-"""project URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.8/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
-Including another URLconf
-    1. Add an import:  from blog import urls as blog_urls
-    2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
-"""
 from django.conf.urls import include, url
 from django.contrib import admin
 
+from irs.views import *
+
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^$', FilingListView.as_view(), name='filings'),
+    url(r'^filings/(?P<filing_id>([0-9]+))/sa/$', SAView.as_view(), name='sa'),
+    url(r'^filings/(?P<filing_id>([0-9]+))/sb/$', SBView.as_view(), name='sb'),
+    url(r'^committee/(?P<EIN>([0-9]{9}))/$', CommitteeDetailView.as_view(), name='committee'),
 ]

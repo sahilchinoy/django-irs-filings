@@ -1,0 +1,58 @@
+{% extends 'irs/base.html' %}
+
+{% load humanize %}
+
+{% block title %}
+Filing {{ filing_id }} | IRS Itemizer
+{% endblock %}
+
+{% block content %}
+	<h4><a href="{% url 'filings' %}">Back to filings</a></h4>
+	<h2>Filing {{ filing_id }} for <a href="{% url 'committee' EIN %}">{{ committee_name }}</a></h2>
+	<h3>{{ page_obj.paginator.count }} contributions</h3>
+	<h4><a href="{% url 'sb' filing_id %}">See expenditures</a></h4>
+	{% if is_paginated %}
+        <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}">&larr;</a>
+                {% else %}
+                	&larr;
+                {% endif %}
+                <span class="page-current">
+                    Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">&rarr;</a>
+                {% else %}
+                	&rarr;
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+	<table class="table">
+	<thead>
+		<tr>
+			<th style="width: 5%">ID</th>
+			<th style="width: 40%">Contributor name</th>
+			<th style="width: 30%">Employer</th>
+			<th style="width: 10%">Date</th>
+			<th style="width: 10%">Amount</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for contribution in object_list %}
+		<tr>
+			<td><a href="#{{ contribution.schedule_a_id }}">{{ contribution.schedule_a_id }}</a></td>
+			<td>{{ contribution.name }}</td>
+			<td>{{ contribution.contributor_employer }}</td>
+			<td>{{ contribution.contribution_date }}</td>
+			<td>${{ contribution.contribution_amount | intcomma }}</td>
+
+		</tr>
+		{% endfor %}
+	</tbody>
+	</table>
+
+	
+{% endblock %}
