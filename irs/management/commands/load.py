@@ -24,6 +24,12 @@ CONTRIBUTIONS = []
 EXPENDITURES = []
 
 class RowParser:
+    """
+    Takes a row from the raw data and a mapping of field
+    positions to field names in order to clean and save the
+    row to the database.
+    """
+
     def __init__(self, form_type, mapping, row):
         self.form_type = form_type
         self.mapping = mapping
@@ -35,6 +41,11 @@ class RowParser:
         self.create_object()
 
     def clean_cell(self, cell, cell_type):
+        """
+        Uses the type of field (from the mapping) to
+        determine how to clean and format the cell.
+        """
+
         try:
             if cell_type == 'D':
                 cell = datetime.strptime(cell, '%Y%m%d')
@@ -53,6 +64,10 @@ class RowParser:
         return cell
 
     def parse_row(self):
+        """
+        Parses a row, cell-by-cell, returning a dict of field names
+        to the cleaned field values.
+        """
         fields = self.mapping
         for i, cell in enumerate(self.row[0:len(fields)]):
             field_name, field_type = fields[str(i)]
@@ -61,30 +76,34 @@ class RowParser:
 
         print self.parsed_row
 
+    def create_contribution(self):
+        contribution = Contribution(**self.parsed_row)
+        contribution.filing_id = contribution.form_id_number
+        contribution.committee_id = contribution.EIN
+
+        if contribution.contributor_name:
+            try:
+                parsed_name, entity_type = probablepeople.tag(
+                    contribution.contributor_name)
+                if entity_type == 'Person':
+                    contribution.entity_type = 'IND'
+                    first_name_or_initial = parsed_name.get('GivenName') or parsed_name.get('FirstInitial')
+                    contribution.contributor_first_name = first_name_or_initial
+                    middle_initial = parsed_name.get('MiddleInitial')
+                    if middle_initial:
+                        contribution.contributor_middle_initial = middle_initial.strip('.')
+                    contribution.contributor_last_name = parsed_name.get('Surname')
+                elif entity_type == 'Corporation':
+                    contribution.entity_type = 'CORP'
+                    contribution.contributor_corporation_name = parsed_name.get('CorporationName')
+
+            except probablepeople.RepeatedLabelError:
+                pass
+        contribution.save()
+
     def create_object(self):
         if self.form_type == 'A':
-            contribution = Contribution(**self.parsed_row)
-            contribution.filing_id = contribution.form_id_number
-            contribution.committee_id = contribution.EIN
-
-            if contribution.contributor_name:
-                try:
-                    parsed_name, entity_type = probablepeople.tag(contribution.contributor_name)
-                    if entity_type == 'Person':
-                        contribution.entity_type = 'IND'
-                        first_name_or_initial = parsed_name.get('GivenName') or parsed_name.get('FirstInitial')
-                        contribution.contributor_first_name = first_name_or_initial
-                        middle_initial = parsed_name.get('MiddleInitial')
-                        if middle_initial:
-                            contribution.contributor_middle_initial = middle_initial.strip('.')
-                        contribution.contributor_last_name = parsed_name.get('Surname')
-                    elif entity_type == 'Corporation':
-                        contribution.entity_type = 'CORP'
-                        contribution.contributor_corporation_name = parsed_name.get('CorporationName')
-
-                except probablepeople.RepeatedLabelError:
-                    pass
-            contribution.save()
+            self.create_contribution()
             #CONTRIBUTIONS.append(contribution)
         elif self.form_type == 'B':
             expenditure = Expenditure(**self.parsed_row)
@@ -120,8 +139,13 @@ class Command(BaseCommand):
         c = boto.s3.connect_to_region('us-west-1')
         b = c.get_bucket('irs-itemizer')
 
-        files = [(key, key.name) for key in b.list() if key.name.startswith('FullDataFile')]
-        latest = sorted(files, key=lambda tup: tup[1].split('-')[1], reverse=True)[0]
+        files = [(key, key.name)
+            for key in b.list()
+            if key.name.startswith('FullDataFile')]
+        latest = sorted(
+            files,
+            key=lambda tup: tup[1].split('-')[1],
+            reverse=True)[0]
         latest_key = latest[0]
 
         latest_key.get_contents_to_filename('latest_filings.txt')
@@ -161,14 +185,25 @@ class Command(BaseCommand):
             previous_filings.update(is_amended=True, amended_by=filing)
         
     def build_mappings(self):
+        """
+        Uses CSV files of field names and positions for
+        different filing types to load mappings into memory,
+        for use in parsing different types of rows.
+        """
         self.mappings = {}
         for record_type in ('sa','sb','F8872'):
-            path = os.path.join(settings.BASE_DIR, 'irs', 'mappings', '{}.csv'.format(record_type))
+            path = os.path.join(
+                settings.BASE_DIR,
+                'irs',
+                'mappings',
+                '{}.csv'.format(record_type))
             mapping = {}
             with open(path, 'r') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    mapping[row['position']] = (row['model_name'], row['field_type'])
+                    mapping[row['position']] = (
+                        row['model_name'],
+                        row['field_type'])
 
 
             self.mappings[record_type] = mapping

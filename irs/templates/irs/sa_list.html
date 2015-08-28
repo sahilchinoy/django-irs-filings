@@ -33,7 +33,7 @@ Filing {{ filing_id }} | IRS Itemizer
 	<table class="table">
 	<thead>
 		<tr>
-			<th style="width: 5%">ID</th>
+			<th style="width: 3%"></th>
 			<th style="width: 40%">Contributor name</th>
 			<th style="width: 30%">Employer</th>
 			<th style="width: 10%">Date</th>
@@ -42,8 +42,8 @@ Filing {{ filing_id }} | IRS Itemizer
 	</thead>
 	<tbody>
 		{% for contribution in object_list %}
-		<tr>
-			<td><a href="#{{ contribution.schedule_a_id }}">{{ contribution.schedule_a_id }}</a></td>
+		<tr class="tableRow" id="{{ contribution.schedule_a_id }}">
+			<td><a class="hash" href="#{{ contribution.schedule_a_id }}">#</a></td>
 			<td>{{ contribution.name }}</td>
 			<td>{{ contribution.contributor_employer }}</td>
 			<td>{{ contribution.contribution_date }}</td>
@@ -54,5 +54,12 @@ Filing {{ filing_id }} | IRS Itemizer
 	</tbody>
 	</table>
 
+<script type="text/javascript">
+$(window.location.hash).addClass('warning');
+$('.hash').on('click', function() {
+	$('.tableRow').removeClass('warning');
+	$($(this).attr('href')).addClass('warning');
+});
+</script>
 	
 {% endblock %}
