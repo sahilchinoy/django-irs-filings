@@ -10,7 +10,7 @@ from irs.models import F8872, Contribution, Expenditure, Committee
 class FilingListView(ListView):
     model = F8872
     template_name = "irs/filing_list.html"
-    paginate_by = 10
+    paginate_by = 15
     queryset = F8872.objects.exclude(is_amended=True)
 
 class SAView(ListView):

@@ -74,8 +74,6 @@ class RowParser:
             parsed_cell = self.clean_cell(cell, field_type)
             self.parsed_row[field_name] = parsed_cell
 
-        print self.parsed_row
-
     def create_contribution(self):
         contribution = Contribution(**self.parsed_row)
         contribution.filing_id = contribution.form_id_number
@@ -99,7 +97,8 @@ class RowParser:
 
             except probablepeople.RepeatedLabelError:
                 pass
-        contribution.save()
+        #contribution.save()
+        CONTRIBUTIONS.append(contribution)
 
     def create_object(self):
         if self.form_type == 'A':
@@ -109,19 +108,17 @@ class RowParser:
             expenditure = Expenditure(**self.parsed_row)
             expenditure.filing_id = expenditure.form_id_number
             expenditure.committee_id = expenditure.EIN
-            #EXPENDITURES.append(expenditure)
-            expenditure.save()
+            EXPENDITURES.append(expenditure)
+            #expenditure.save()
         elif self.form_type == '2':
             filing = F8872(**self.parsed_row)
-
             committee, created = Committee.objects.get_or_create(EIN=filing.EIN)
             if created:
                 committee.name = filing.organization_name
                 committee.save()
-
             filing.committee = committee
-
-            filing.save()
+            #filing.save()
+            FILINGS.append(filing)
         
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -134,7 +131,7 @@ class Command(BaseCommand):
         Expenditure.objects.all().delete()
         Committee.objects.all().delete()
 
-        print 'Fetching latest archive'
+        """print 'Fetching latest archive'
 
         c = boto.s3.connect_to_region('us-west-1')
         b = c.get_bucket('irs-itemizer')
@@ -149,8 +146,9 @@ class Command(BaseCommand):
         latest_key = latest[0]
 
         latest_key.get_contents_to_filename('latest_filings.txt')
+        """
 
-        with open('latest_filings.txt','r') as raw_file:
+        with open('TestDataFile2.txt','r') as raw_file:
             reader = csv.reader(raw_file, delimiter='|')
             bulk_filings = []
             bulk_contribs = []
@@ -159,7 +157,6 @@ class Command(BaseCommand):
                     form_type = row[0]
                     if form_type == '2':
                         RowParser(form_type, self.mappings['F8872'], row)
-                        print 'Created 8872' 
                     elif form_type == 'A':
                         RowParser(form_type, self.mappings['sa'], row)
                         #print 'Created contrib' 
@@ -169,20 +166,26 @@ class Command(BaseCommand):
                 except IndexError:
                     pass
 
-        """print 'Creating {} contributions'.format(len(CONTRIBUTIONS))
+        print 'Creating {} filings'.format(len(FILINGS))
+        F8872.objects.bulk_create(FILINGS, batch_size=1000)
+        print 'Creating {} contributions'.format(len(CONTRIBUTIONS))
         Contribution.objects.bulk_create(CONTRIBUTIONS, batch_size=1000)
         print 'Creating {} expenditures'.format(len(EXPENDITURES))
-        Expenditure.objects.bulk_create(EXPENDITURES, batch_size=1000)"""
+        Expenditure.objects.bulk_create(EXPENDITURES, batch_size=1000)
 
         print 'Resolving amendments'
         for filing in F8872.objects.filter(amended_report_indicator=1):
             previous_filings = F8872.objects.filter(
-                committee=filing.committee,
+                committee_id=filing.EIN,
                 begin_date=filing.begin_date,
                 end_date=filing.end_date,
                 form_id_number__lt=filing.form_id_number)
 
-            previous_filings.update(is_amended=True, amended_by=filing)
+            previous_filings.update(
+                is_amended=True,
+                amended_by_id=filing.form_id_number)
+
+        # Delete the local file
         
     def build_mappings(self):
         """

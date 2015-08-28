@@ -1,6 +1,7 @@
 {% extends 'irs/base.html' %}
 
 {% load humanize %}
+{% load bootstrap_pagination %}
 
 {% block title %}
 Filings | IRS Itemizer
@@ -9,29 +10,11 @@ Filings | IRS Itemizer
 {% block content %}
 	<h2>IRS Itemizer</h2>
 	<h3>{{ page_obj.paginator.count | intcomma }} filings</h3>
-	{% if is_paginated %}
-        <div class="pagination">
-            <span class="page-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}">&larr;</a>
-                {% else %}
-                	&larr;
-                {% endif %}
-                <span class="page-current">
-                    Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
-                </span>
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">&rarr;</a>
-                {% else %}
-                	&rarr;
-                {% endif %}
-            </span>
-        </div>
-    {% endif %}
+	{% bootstrap_paginate page_obj range=5 show_first_last='true' %}
+
 	<table class="table">
 	<thead>
 		<tr>
-			<th style="width: 5%">ID</th>
 			<th style="width: 5%">Type</th>
 			<th style="width: 51%">Committee</th>
 			<th style="width: 12%">Start</th>
@@ -43,7 +26,6 @@ Filings | IRS Itemizer
 	<tbody>
 		{% for filing in object_list %}
 		<tr>
-			<td>{{ filing.form_id_number }}</td>
 			<td>{{ filing.form_type }}</td>
 			<td><a href="{% url 'committee' filing.EIN %}">{{ filing.organization_name }}</a></td>
 			<td>{{ filing.begin_date }}</td>

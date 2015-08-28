@@ -25,9 +25,9 @@ class Command(BaseCommand):
             settings.DATA_DIR,
             'FullDataFile-{}.txt'.format(self.current_date))
 
-        #self.download()
-        #self.unzip()
-        #self.clean()
+        self.download()
+        self.unzip()
+        self.clean()
 
         c = boto.s3.connect_to_region('us-west-1')
         b = c.get_bucket('irs-itemizer')
@@ -80,6 +80,6 @@ class Command(BaseCommand):
             self.final_path
         )
 
-        #shutil.rmtree(os.path.join(settings.DATA_DIR, 'var'))
-        #os.remove(self.zip_path)
+        shutil.rmtree(os.path.join(settings.DATA_DIR, 'var'))
+        os.remove(self.zip_path)
 

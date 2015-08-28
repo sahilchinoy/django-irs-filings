@@ -9,7 +9,7 @@ Filing {{ filing_id }} | IRS Itemizer
 {% block content %}
 	<h4><a href="{% url 'filings' %}">Back to filings</a></h4>
 	<h2>Filing {{ filing_id }} for <a href="{% url 'committee' EIN %}">{{ committee_name }}</a></h2>
-	<h3>{{ object_list.count }} expenditures</h3>
+	<h3>{{ object_list.count | intcomma }} expenditure{{ object_list.count | pluralize }}</h3>
 	<p><a href="{% url 'sb_csv' filing_id %}">Download expenditures as CSV</a></p>
 	<p><a href="{% url 'sa' filing_id %}">See contributions</a></p>
 
@@ -17,10 +17,10 @@ Filing {{ filing_id }} | IRS Itemizer
 	<thead>
 		<tr>
 			<th style="width: 3%"></th>
-			<th style="width: 50%">Recipient name</th>
+			<th style="width: 40%">Recipient name</th>
 			<th style="width: 10%">Amount</th>
 			<th style="width: 10%">Date</th>
-			<th style="width: 20%">Purpose</th>
+			<th style="width: 35%">Purpose</th>
 		</tr>
 	</thead>
 	<tbody>

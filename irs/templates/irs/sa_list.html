@@ -9,7 +9,7 @@ Filing {{ filing_id }} | IRS Itemizer
 {% block content %}
 	<h4><a href="{% url 'filings' %}">Back to filings</a></h4>
 	<h2>Filing {{ filing_id }} for <a href="{% url 'committee' EIN %}">{{ committee_name }}</a></h2>
-	<h3>{{ object_list.count }} contributions</h3>
+	<h3>{{ object_list.count | intcomma }} contribution{{ object_list.count | pluralize }}</h3>
 	<p><a href="{% url 'sa_csv' filing_id %}">Download contributions as CSV</a></p>
 	<p><a href="{% url 'sb' filing_id %}">See expenditures</a></p>
 	<table class="table">
@@ -26,7 +26,7 @@ Filing {{ filing_id }} | IRS Itemizer
 		{% for contribution in object_list %}
 		<tr class="tableRow" id="{{ contribution.schedule_a_id }}">
 			<td><a class="hash" href="#{{ contribution.schedule_a_id }}">#</a></td>
-			<td>{{ contribution.name }}</td>
+			<td>{{ contribution.contributor_name }}</td>
 			<td>{{ contribution.contributor_employer }}</td>
 			<td>{{ contribution.contribution_date }}</td>
 			<td>${{ contribution.contribution_amount | intcomma }}</td>

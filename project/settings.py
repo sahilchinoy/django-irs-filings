@@ -26,6 +26,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'bootstrap_pagination',
     'irs'
 )
 
