@@ -9,27 +9,10 @@ Filing {{ filing_id }} | IRS Itemizer
 {% block content %}
 	<h4><a href="{% url 'filings' %}">Back to filings</a></h4>
 	<h2>Filing {{ filing_id }} for <a href="{% url 'committee' EIN %}">{{ committee_name }}</a></h2>
-	<h3>{{ page_obj.paginator.count }} expenditures</h3>
-	<h4><a href="{% url 'sa' filing_id %}">See contributions</a></h4>
-	{% if is_paginated %}
-        <div class="pagination">
-            <span class="page-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}">&larr;</a>
-                {% else %}
-                	&larr;
-                {% endif %}
-                <span class="page-current">
-                    Page <strong>{{ page_obj.number }}</strong> of <strong>{{ page_obj.paginator.num_pages }}</strong>
-                </span>
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">&rarr;</a>
-                {% else %}
-                	&rarr;
-                {% endif %}
-            </span>
-        </div>
-    {% endif %}
+	<h3>{{ object_list.count }} expenditures</h3>
+	<p><a href="{% url 'sb_csv' filing_id %}">Download expenditures as CSV</a></p>
+	<p><a href="{% url 'sa' filing_id %}">See contributions</a></p>
+
 	<table class="table">
 	<thead>
 		<tr>

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from djqscsv import render_to_csv_response
 
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
@@ -29,6 +30,12 @@ class SAView(ListView):
         context['filing_id'] = self.kwargs['filing_id']
         return context
 
+class SACSV(TemplateView):
+    def render_to_response(self, context, **kwargs):
+        qs = Contribution.objects.filter(
+            form_id_number=self.kwargs['filing_id'])
+        return render_to_csv_response(qs)
+
 class SBView(ListView):
     model = Expenditure
     template_name = "irs/sb_list.html"
@@ -45,6 +52,12 @@ class SBView(ListView):
         context['committee_name'] = committee_name
         context['filing_id'] = self.kwargs['filing_id']
         return context
+
+class SBCSV(TemplateView):
+    def render_to_response(self, context, **kwargs):
+        qs = Expenditure.objects.filter(
+            form_id_number=self.kwargs['filing_id'])
+        return render_to_csv_response(qs)
 
 class CommitteeDetailView(DetailView):
     """
