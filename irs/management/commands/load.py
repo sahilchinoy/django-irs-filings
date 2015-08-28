@@ -1,6 +1,7 @@
 import os
 import csv
 import string
+import boto
 from datetime import *
 import probablepeople
 from django.conf import settings
@@ -58,6 +59,8 @@ class RowParser:
             parsed_cell = self.clean_cell(cell, field_type)
             self.parsed_row[field_name] = parsed_cell
 
+        print self.parsed_row
+
     def create_object(self):
         if self.form_type == 'A':
             contribution = Contribution(**self.parsed_row)
@@ -105,19 +108,25 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.build_mappings()
 
+        print 'Flushing database'
+
         F8872.objects.all().delete()
         Contribution.objects.all().delete()
         Expenditure.objects.all().delete()
         Committee.objects.all().delete()
 
-        latest_download = self.get_latest_downloaded_file()
-        path = os.path.join(
-            settings.BASE_DIR,
-            'irs',
-            'data',
-            latest_download)
+        print 'Fetching latest archive'
 
-        with open(path,'r') as raw_file:
+        c = boto.s3.connect_to_region('us-west-1')
+        b = c.get_bucket('irs-itemizer')
+
+        files = [(key, key.name) for key in b.list() if key.name.startswith('FullDataFile')]
+        latest = sorted(files, key=lambda tup: tup[1].split('-')[1], reverse=True)[0]
+        latest_key = latest[0]
+
+        latest_key.get_contents_to_filename('latest_filings.txt')
+
+        with open('latest_filings.txt','r') as raw_file:
             reader = csv.reader(raw_file, delimiter='|')
             bulk_filings = []
             bulk_contribs = []
@@ -150,12 +159,6 @@ class Command(BaseCommand):
                 form_id_number__lt=filing.form_id_number)
 
             previous_filings.update(is_amended=True, amended_by=filing)
-
-    def get_latest_downloaded_file(self):
-        files = os.listdir(settings.DATA_DIR)
-        textfiles = [fname for fname in files if fname.startswith('FullDataFile')]
-        first = sorted(textfiles, key=lambda fname: fname.split('-')[1], reverse=True)[0]
-        return first
         
     def build_mappings(self):
         self.mappings = {}
