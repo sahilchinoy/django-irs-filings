@@ -23,6 +23,9 @@ NULL_TERMS = [
     'N A',
     'N-A']
 
+CONTRIBUTIONS = []
+EXPENDITURES = []
+
 # Running list of filing ids so we don't add contributions or expenditures
 # without an associated filing
 PARSED_FILING_IDS = set()
@@ -96,6 +99,7 @@ class RowParser:
 
         # Attempt to parse the name. This doesn't work incredibly well,
         # so it's still experimental
+        """
         if contribution.contributor_name:
             try:
                 parsed_name, entity_type = probablepeople.tag(
@@ -118,8 +122,10 @@ class RowParser:
 
             except probablepeople.RepeatedLabelError:
                 pass
+        """
 
-        contribution.save()
+        CONTRIBUTIONS.append(contribution)
+        #contribution.save()
 
     def create_object(self):
         if self.form_type == 'A':
@@ -135,7 +141,8 @@ class RowParser:
             expenditure.filing_id = expenditure.form_id_number
             expenditure.committee_id = expenditure.EIN
 
-            expenditure.save()
+            EXPENDITURES.append(expenditure)
+            #expenditure.save()
 
         elif self.form_type == '2':
             filing = F8872(**self.parsed_row)
@@ -164,9 +171,9 @@ class Command(BaseCommand):
             'FullDataFile.txt')
 
         print 'Downloading latest archive'
-        self.download()
-        self.unzip()
-        self.clean()
+        #self.download()
+        #self.unzip()
+        #self.clean()
 
         print 'Flushing database'
         F8872.objects.all().delete()
@@ -176,9 +183,18 @@ class Command(BaseCommand):
 
         print 'Parsing archive'
         self.build_mappings()
+        global CONTRIBUTIONS
+        global EXPENDITURES
         with open(self.final_path,'r') as raw_file:
             reader = csv.reader(raw_file, delimiter='|')
             for row in reader:
+                if len(CONTRIBUTIONS) > 1000:
+                    Contribution.objects.bulk_create(CONTRIBUTIONS)
+                    CONTRIBUTIONS = []
+                if len(EXPENDITURES) > 1000:
+                    Expenditure.objects.bulk_create(EXPENDITURES)
+                    EXPENDITURES = []
+
                 try:
                     form_type = row[0]
                     if form_type == '2':
@@ -211,7 +227,7 @@ class Command(BaseCommand):
         r = requests.get(url, stream=True)
         with open(self.zip_path, 'wb') as f:
             # This is a big file, so we download in chunks
-            for chunk in r.iter_content(chunk_size=4096):
+            for chunk in r.iter_content(chunk_size=30720):
                 print 'Downloading...'
                 f.write(chunk)
                 f.flush()
