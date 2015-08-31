@@ -121,7 +121,8 @@ class RowParser:
             except probablepeople.RepeatedLabelError:
                 pass
 
-        CONTRIBUTIONS.append(contribution)
+        #CONTRIBUTIONS.append(contribution)
+        contribution.save()
 
     def create_object(self):
         if self.form_type == 'A':
@@ -137,7 +138,9 @@ class RowParser:
             expenditure.filing_id = expenditure.form_id_number
             expenditure.committee_id = expenditure.EIN
 
-            EXPENDITURES.append(expenditure)
+            #EXPENDITURES.append(expenditure)
+            expenditure.save()
+
         elif self.form_type == '2':
             filing = F8872(**self.parsed_row)
             PARSED_FILING_IDS.add(filing.form_id_number)
@@ -148,7 +151,9 @@ class RowParser:
                 committee.save()
             filing.committee = committee
 
-            FILINGS.append(filing)
+            filing.save()
+
+            #FILINGS.append(filing)
         
 class Command(BaseCommand):
     def handle(self, *args, **options):
