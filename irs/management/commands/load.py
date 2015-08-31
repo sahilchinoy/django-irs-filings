@@ -141,6 +141,7 @@ class RowParser:
         elif self.form_type == '2':
             filing = F8872(**self.parsed_row)
             PARSED_FILING_IDS.add(filing.form_id_number)
+            print 'Parsing filing {}'.format(filing.form_id_number)
             committee, created = Committee.objects.get_or_create(EIN=filing.EIN)
             if created:
                 committee.name = filing.organization_name
