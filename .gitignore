@@ -1,4 +1,3 @@
 .DS_Store
-*.pyc
 irs/data/*
-latest_filings.txt
+settings_dev.py

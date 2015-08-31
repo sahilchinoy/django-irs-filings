@@ -23,11 +23,6 @@ NULL_TERMS = [
     'N A',
     'N-A']
 
-# Lists we will add to and then use to bulk insert into the database
-FILINGS = []
-CONTRIBUTIONS = []
-EXPENDITURES = []
-
 # Running list of filing ids so we don't add contributions or expenditures
 # without an associated filing
 PARSED_FILING_IDS = set()
@@ -112,16 +107,18 @@ class RowParser:
                     contribution.contributor_first_name = first_name_or_initial
                     middle_initial = parsed_name.get('MiddleInitial')
                     if middle_initial:
-                        contribution.contributor_middle_initial = middle_initial.strip('.')
-                    contribution.contributor_last_name = parsed_name.get('Surname')
+                        contribution.contributor_middle_initial = \
+                        middle_initial.strip('.')
+                    contribution.contributor_last_name = parsed_name.get(
+                        'Surname')
                 elif entity_type == 'Corporation':
                     contribution.entity_type = 'CORP'
-                    contribution.contributor_corporation_name = parsed_name.get('CorporationName')
+                    contribution.contributor_corporation_name = parsed_name.get(
+                        'CorporationName')
 
             except probablepeople.RepeatedLabelError:
                 pass
 
-        #CONTRIBUTIONS.append(contribution)
         contribution.save()
 
     def create_object(self):
@@ -138,7 +135,6 @@ class RowParser:
             expenditure.filing_id = expenditure.form_id_number
             expenditure.committee_id = expenditure.EIN
 
-            #EXPENDITURES.append(expenditure)
             expenditure.save()
 
         elif self.form_type == '2':
@@ -152,8 +148,6 @@ class RowParser:
             filing.committee = committee
 
             filing.save()
-
-            #FILINGS.append(filing)
         
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -195,13 +189,6 @@ class Command(BaseCommand):
                         RowParser(form_type, self.mappings['sb'], row)
                 except IndexError:
                     pass
-
-        print 'Creating {} filings'.format(len(FILINGS))
-        F8872.objects.bulk_create(FILINGS, batch_size=1000)
-        print 'Creating {} contributions'.format(len(CONTRIBUTIONS))
-        Contribution.objects.bulk_create(CONTRIBUTIONS, batch_size=1000)
-        print 'Creating {} expenditures'.format(len(EXPENDITURES))
-        Expenditure.objects.bulk_create(EXPENDITURES, batch_size=1000)
 
         print 'Resolving amendments'
         for filing in F8872.objects.filter(amended_report_indicator=1):

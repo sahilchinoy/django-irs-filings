@@ -5,6 +5,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.base import TemplateView
 from irs.models import F8872, Contribution, Expenditure, Committee
 
+
 class FilingListView(ListView):
     """
     List of all F8872 filings: quarterly, year-end
@@ -15,6 +16,7 @@ class FilingListView(ListView):
     template_name = 'irs/filing_list.html'
     paginate_by = 15
     queryset = F8872.objects.exclude(is_amended=True)
+
 
 class SAView(ListView):
     """
@@ -36,6 +38,7 @@ class SAView(ListView):
         context['filing_id'] = self.kwargs['filing_id']
         return context
 
+
 class SACSV(TemplateView):
     """
     CSV of contributions for a particular filing.
@@ -44,6 +47,7 @@ class SACSV(TemplateView):
         qs = Contribution.objects.filter(
             form_id_number=self.kwargs['filing_id'])
         return render_to_csv_response(qs)
+
 
 class SBView(ListView):
     """
@@ -65,6 +69,7 @@ class SBView(ListView):
         context['filing_id'] = self.kwargs['filing_id']
         return context
 
+
 class SBCSV(TemplateView):
     """
     CSV of expenditures for a particular filing.
@@ -74,6 +79,7 @@ class SBCSV(TemplateView):
             form_id_number=self.kwargs['filing_id'])
         return render_to_csv_response(qs)
 
+
 class CommitteeDetailView(DetailView):
     """
     Information about a specific committee.
@@ -81,4 +87,3 @@ class CommitteeDetailView(DetailView):
     model = Committee
     slug_url_kwarg = 'EIN'
     slug_field = 'EIN'
-    
