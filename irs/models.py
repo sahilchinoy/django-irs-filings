@@ -20,11 +20,11 @@ class Expenditure(models.Model):
 		null=True,
 		blank=True)
 	recipient_address_line_1 = models.CharField(
-		max_length=50,
+		max_length=100,
 		null=True,
 		blank=True)
 	recipient_address_line_2 = models.CharField(
-		max_length=50,
+		max_length=100,
 		null=True,
 		blank=True)
 	recipient_address_city = models.CharField(
@@ -82,11 +82,11 @@ class Contribution(models.Model):
 		null=True,
 		blank=True)
 	contributor_address_line_1 = models.CharField(
-		max_length=50,
+		max_length=100,
 		null=True,
 		blank=True)
 	contributor_address_line_2 = models.CharField(
-		max_length=50,
+		max_length=100,
 		null=True,
 		blank=True)
 	contributor_address_city = models.CharField(
@@ -118,6 +118,7 @@ class Contribution(models.Model):
 		null=True,
 		blank=True)
 	agg_contribution_ytd = models.DecimalField(
+		null=True,
 		max_digits=17,
 		decimal_places=2)
 	contribution_date = models.DateField(
@@ -138,11 +139,11 @@ class Contribution(models.Model):
 		null=True,
 		blank=True)
 	contributor_first_name = models.CharField(
-		max_length=50,
+		max_length=70,
 		null=True,
 		blank=True)
 	contributor_last_name = models.CharField(
-		max_length=50,
+		max_length=70,
 		null=True,
 		blank=True)
 	contributor_middle_initial = models.CharField(
@@ -150,7 +151,7 @@ class Contribution(models.Model):
 		null=True,
 		blank=True)
 	contributor_corporation_name = models.CharField(
-		max_length=50,
+		max_length=70,
 		null=True,
 		blank=True)
 
@@ -203,43 +204,129 @@ class F8872(models.Model):
 		max_length=2,
 		null=True,
 		blank=True)
-	mailing_address_zip_code = models.CharField(max_length=5, null=True, blank=True)
-	mailing_address_zip_ext = models.CharField(max_length=4, null=True, blank=True)
-	email = models.CharField(max_length=150, null=True, blank=True)
-	org_formation_date = models.DateField(auto_now=False, null=True)
-	custodian_name = models.CharField(max_length=50, null=True, blank=True)
-	custodian_address_line_1 = models.CharField(max_length=50, null=True, blank=True)
-	custodian_address_line_2 = models.CharField(max_length=50, null=True, blank=True)
-	custodian_address_city = models.CharField(max_length=50, null=True, blank=True)
-	custodian_address_state = models.CharField(max_length=2, null=True, blank=True)
-	custodian_address_zip_code = models.CharField(max_length=5, null=True, blank=True)
-	custodian_address_zip_ext = models.CharField(max_length=4, null=True, blank=True)
-	contact_name = models.CharField(max_length=50, null=True, blank=True)
-	contact_address_line_1 = models.CharField(max_length=50, null=True, blank=True)
-	contact_address_line_2 = models.CharField(max_length=50, null=True, blank=True)
-	contact_address_city = models.CharField(max_length=50, null=True, blank=True)
-	contact_address_state = models.CharField(max_length=2, null=True, blank=True)
-	contact_address_zip_code = models.CharField(max_length=5, null=True, blank=True)
-	contact_address_zip_ext = models.CharField(max_length=4, null=True, blank=True)
-	business_address_line_1 = models.CharField(max_length=50, null=True, blank=True)
-	business_address_line_2 = models.CharField(max_length=50, null=True, blank=True)
-	business_address_city = models.CharField(max_length=50, null=True, blank=True)
-	business_address_state = models.CharField(max_length=2, null=True, blank=True)
-	business_address_zip_code = models.CharField(max_length=5, null=True, blank=True)
-	business_address_zip_ext = models.CharField(max_length=4, null=True, blank=True)
+	mailing_address_zip_code = models.CharField(
+		max_length=5,
+		null=True,
+		blank=True)
+	mailing_address_zip_ext = models.CharField(
+		max_length=4,
+		null=True,
+		blank=True)
+	email = models.CharField(
+		max_length=150,
+		null=True,
+		blank=True)
+	org_formation_date = models.DateField(
+		auto_now=False,
+		null=True)
+	custodian_name = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	custodian_address_line_1 = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	custodian_address_line_2 = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	custodian_address_city = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	custodian_address_state = models.CharField(
+		max_length=2,
+		null=True,
+		blank=True)
+	custodian_address_zip_code = models.CharField(
+		max_length=5,
+		null=True,
+		blank=True)
+	custodian_address_zip_ext = models.CharField(
+		max_length=4,
+		null=True,
+		blank=True)
+	contact_name = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	contact_address_line_1 = models.CharField(
+		max_length=50, 
+		null=True,
+		blank=True)
+	contact_address_line_2 = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	contact_address_city = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	contact_address_state = models.CharField(
+		max_length=2,
+		null=True,
+		blank=True)
+	contact_address_zip_code = models.CharField(
+		max_length=5,
+		null=True,
+		blank=True)
+	contact_address_zip_ext = models.CharField(
+		max_length=4,
+		null=True,
+		blank=True)
+	business_address_line_1 = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	business_address_line_2 = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	business_address_city = models.CharField(
+		max_length=50,
+		null=True,
+		blank=True)
+	business_address_state = models.CharField(
+		max_length=2,
+		null=True,
+		blank=True)
+	business_address_zip_code = models.CharField(
+		max_length=5,
+		null=True,
+		blank=True)
+	business_address_zip_ext = models.CharField(
+		max_length=4,
+		null=True,
+		blank=True)
 	quarter_indicator = models.IntegerField(null=True)
 	monthly_report_month = models.IntegerField(null=True)
-	pre_election_type = models.CharField(max_length=10,null=True,blank=True)
-	election_date = models.DateField(auto_now=False, null=True)
-	election_state = models.CharField(max_length=2, null=True, blank=True)
+	pre_election_type = models.CharField(
+		max_length=10,
+		null=True,
+		blank=True)
+	election_date = models.DateField(
+		auto_now=False,
+		null=True)
+	election_state = models.CharField(
+		max_length=2,
+		null=True,
+		blank=True)
 	schedule_a_indicator = models.IntegerField(null=True)
-	schedule_a_total = models.DecimalField(max_digits=17,decimal_places=2)
+	schedule_a_total = models.DecimalField(
+		max_digits=17,
+		decimal_places=2)
 	schedule_b_indicator = models.IntegerField(null=True)
-	schedule_b_total = models.DecimalField(max_digits=17,decimal_places=2)
+	schedule_b_total = models.DecimalField(
+		max_digits=17,
+		decimal_places=2)
 	insert_datetime = models.DateTimeField(auto_now=False)
 
 	is_amended = models.BooleanField(default=False)
-	amended_by = models.ForeignKey('self', null=True, related_name='amends')
+	amended_by = models.ForeignKey(
+		'self',
+		null=True,
+		related_name='amends')
 
 	class Meta:
 		ordering = ['-end_date','-form_id_number']
