@@ -171,9 +171,9 @@ class Command(BaseCommand):
             'FullDataFile.txt')
 
         print 'Downloading latest archive'
-        #self.download()
-        #self.unzip()
-        #self.clean()
+        self.download()
+        self.unzip()
+        self.clean()
 
         print 'Flushing database'
         F8872.objects.all().delete()
@@ -188,10 +188,10 @@ class Command(BaseCommand):
         with open(self.final_path,'r') as raw_file:
             reader = csv.reader(raw_file, delimiter='|')
             for row in reader:
-                if len(CONTRIBUTIONS) > 1000:
+                if len(CONTRIBUTIONS) > 5000:
                     Contribution.objects.bulk_create(CONTRIBUTIONS)
                     CONTRIBUTIONS = []
-                if len(EXPENDITURES) > 1000:
+                if len(EXPENDITURES) > 5000:
                     Expenditure.objects.bulk_create(EXPENDITURES)
                     EXPENDITURES = []
 
