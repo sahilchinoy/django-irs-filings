@@ -42,6 +42,24 @@ $ cd repo
 $ pip install -r requirements.txt
 ```
 
+Create a new database for this project.
+
+```bash
+$ createdb irs
+```
+
+Make a copy of settings_dev.py and configure it to connect to your new database.
+
+```bash
+$ cp project/settings_dev.py.template project/settings_dev.py
+$ vim project/settings_dev.py
+```
+
+Run the test server for the first time. There shouldn't be any filings loaded yet.
+
+```bash
+$ python manage.py runserver
+```
 
 # Downloading
 To get started, call the `load` command. This will download the latest zipped archive from the IRS website, unzip and parse it, and insert it into the database.
