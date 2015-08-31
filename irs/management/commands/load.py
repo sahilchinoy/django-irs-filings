@@ -125,7 +125,6 @@ class RowParser:
         """
 
         CONTRIBUTIONS.append(contribution)
-        #contribution.save()
 
     def create_object(self):
         if self.form_type == 'A':
@@ -142,7 +141,6 @@ class RowParser:
             expenditure.committee_id = expenditure.EIN
 
             EXPENDITURES.append(expenditure)
-            #expenditure.save()
 
         elif self.form_type == '2':
             filing = F8872(**self.parsed_row)
