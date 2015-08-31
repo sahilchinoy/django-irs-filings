@@ -6,7 +6,7 @@ import zipfile
 import requests
 import probablepeople
 from decimal import Decimal
-from datetime import strptime
+from datetime import datetime
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from irs.models import F8872, Contribution, Expenditure, Committee
@@ -56,7 +56,7 @@ class RowParser:
         """
         try:
             if cell_type == 'D':
-                cell = strptime(cell, '%Y%m%d')
+                cell = datetime.strptime(cell, '%Y%m%d')
             elif cell_type == 'I':
                 cell = int(cell)
             elif cell_type == 'N':
