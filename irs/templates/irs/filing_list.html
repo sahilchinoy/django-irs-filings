@@ -8,17 +8,22 @@ Filings | IRS Itemizer
 {% endblock %}
 
 {% block content %}
-	<h2>IRS Itemizer</h2>
-	<h3>{{ page_obj.paginator.count | intcomma }} filings</h3>
-	{% bootstrap_paginate page_obj range=5 show_first_last='true' %}
+	<div style="text-align: center; background-color: #FFF0F5; border-radius: 10px; padding: 5px; margin-top: 10px;">
+		<h1>IRS Political Committee Itemizer</h1>
+		<p class="lead">Some political action committees file periodic disclosure reports <a href="http://www.irs.gov/Charities-&-Non-Profits/Political-Organizations/Political-Organization-Filing-and-Disclosure">with the IRS</a> under § 527 of the U.S. Tax Code.</p>
+		<p>Browse and download their contributions and expenditures here. Or, <a href="https://github.com/sahilchinoy/django-irs">run the itemizer on your own computer.</a></p>
+		<p>The IRS updates their data every Sunday.</p>
+		<p style=" font-size: 12px;">by <a href="http://sahilchinoy.com">Sahil Chinoy</a> and inspired by <a href="https://projects.propublica.org/itemizer/">ProPublica's FEC Itemizer</a></p>
+	</div>
 
+	{% bootstrap_paginate page_obj range=5 show_first_last='true' %}
+	
 	<table class="table">
 	<thead>
 		<tr>
-			<th style="width: 5%">Type</th>
-			<th style="width: 51%">Committee</th>
-			<th style="width: 12%">Start</th>
-			<th style="width: 12%">End</th>
+			<th style="width: 50%">Committee</th>
+			<th style="width: 15%">Start</th>
+			<th style="width: 15%">End</th>
 			<th style="width: 10%">Contributions</th>
 			<th style="width: 10%">Expenditures</th>
 		</tr>
@@ -26,7 +31,6 @@ Filings | IRS Itemizer
 	<tbody>
 		{% for filing in object_list %}
 		<tr>
-			<td>{{ filing.form_type }}</td>
 			<td><a href="{% url 'committee' filing.EIN %}">{{ filing.organization_name }}</a></td>
 			<td>{{ filing.begin_date }}</td>
 			<td>{{ filing.end_date }}</td>
