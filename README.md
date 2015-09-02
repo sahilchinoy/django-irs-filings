@@ -1,7 +1,8 @@
 # django-irs
 A Django project for downloading and parsing IRS campaign finance data, inspired by the [New York Times Fech library](https://github.com/NYTimes/Fech).
 
-# Background
+Background
+---------------
 Some political committees report their contributions and expenditures to the IRS under § 527 of the U.S. tax code. The IRS publishes these disclosure forms as a bulk download. This app attempts to make sense of that bulk export.
 
 The [archive](http://forms.irs.gov/app/pod/dataDownload/dataDownload) is updated every Sunday at 1:00 AM. 
@@ -9,7 +10,7 @@ The [archive](http://forms.irs.gov/app/pod/dataDownload/dataDownload) is updated
 Getting started
 ---------------
 
-Install django-irs-filings as an app in a Django project.
+Install `django-irs-filings` as an app in a Django project.
 
 ```bash
 $ pip install django-irs-filings
