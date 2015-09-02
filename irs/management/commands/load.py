@@ -155,16 +155,24 @@ class RowParser:
             filing.save()
         
 class Command(BaseCommand):
-    def handle(self, *args, **options):
+    help = "Download the latest IRS filings and load them into the database"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--test',
+            action='store_true',
+            dest='test',
+            default=False,
+            help='Use a subset of data for testing',
+        )
+
+    def handle(self, *args, **options):
         # Create a temporary data directory
         self.data_dir = os.path.join(
             settings.BASE_DIR,
             'data')
-
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
-
         # Where to download the raw zipped archive
         self.zip_path = os.path.join(
             self.data_dir,
@@ -177,20 +185,33 @@ class Command(BaseCommand):
             self.data_dir,
             'FullDataFile.txt')
 
-        self.build_mappings()
-
-        print 'Downloading latest archive'
-        self.download()
-        self.unzip()
-        self.clean()
-
         print 'Flushing database'
         F8872.objects.all().delete()
         Contribution.objects.all().delete()
         Expenditure.objects.all().delete()
         Committee.objects.all().delete()
 
+        if options['test']:
+            test_data_path = os.path.join(
+                os.path.dirname(
+                    os.path.dirname(
+                        os.path.dirname(__file__))),
+                'tests',
+                'TestDataFile.txt')
+
+            shutil.move(
+                test_data_path,
+                self.final_path
+            )
+        else:
+            print 'Downloading latest archive'
+            self.download()
+            self.unzip()
+            self.clean()
+
         print 'Parsing archive'
+
+        self.build_mappings()
         
         global CONTRIBUTIONS
         global EXPENDITURES
@@ -228,7 +249,7 @@ class Command(BaseCommand):
                 amended_by_id=filing.form_id_number)
 
         # Delete the data directory
-        shutil.rmtree(os.path.join(self.data_dir, 'var'))
+        shutil.rmtree(os.path.join(self.data_dir))
 
     def download(self):
         """
