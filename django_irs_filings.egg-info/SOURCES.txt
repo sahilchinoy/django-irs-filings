@@ -3,6 +3,7 @@ MANIFEST.in
 README.md
 setup.cfg
 setup.py
+django_irs_filings.egg-info/.DS_Store
 django_irs_filings.egg-info/PKG-INFO
 django_irs_filings.egg-info/SOURCES.txt
 django_irs_filings.egg-info/dependency_links.txt

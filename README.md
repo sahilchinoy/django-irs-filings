@@ -1,5 +1,6 @@
-# django-irs
-A Django project for downloading and parsing IRS campaign finance data, inspired by the [New York Times Fech library](https://github.com/NYTimes/Fech).
+A Django app for downloading and parsing IRS campaign finance data, inspired by the [New York Times Fech library](https://github.com/NYTimes/Fech).
+
+Tested under Python 2.7.
 
 Background
 ---------------
@@ -16,7 +17,19 @@ Install `django-irs-filings` as an app in a Django project.
 $ pip install django-irs-filings
 ```
 
-To get started, call the `load` command. This will download the latest zipped archive from the IRS website, unzip and parse it, and insert it into the database.
+Add `irs` to your list of `INSTALLED_APPS` in `settings.py`.
+
+```bash
+$ vim project/settings.py
+```
+
+Migrate your database.
+
+```bash
+$ python manage.py migrate
+```
+
+Finally, call the `load` command. This will download the latest zipped archive from the IRS website, unzip and parse it, and insert it into the database.
 
 ```bash
 $ python manage.py load
