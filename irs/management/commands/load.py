@@ -156,17 +156,28 @@ class RowParser:
         
 class Command(BaseCommand):
     def handle(self, *args, **options):
+
+        # Create a temporary data directory
+        self.data_dir = os.path.join(
+            settings.BASE_DIR,
+            'data')
+
+        if not os.path.exists(self.data_dir):
+            os.makedirs(self.data_dir)
+
         # Where to download the raw zipped archive
         self.zip_path = os.path.join(
-            settings.DATA_DIR,
+            self.data_dir,
             'zipped_archive.zip')
         # Where to extract the archive
         self.extract_path = os.path.join(
-            settings.DATA_DIR)
+            self.data_dir)
         # Where to store the data file
         self.final_path = os.path.join(
-            settings.DATA_DIR,
+            self.data_dir,
             'FullDataFile.txt')
+
+        self.build_mappings()
 
         print 'Downloading latest archive'
         self.download()
@@ -180,7 +191,7 @@ class Command(BaseCommand):
         Committee.objects.all().delete()
 
         print 'Parsing archive'
-        self.build_mappings()
+        
         global CONTRIBUTIONS
         global EXPENDITURES
         with open(self.final_path,'r') as raw_file:
@@ -216,6 +227,9 @@ class Command(BaseCommand):
                 is_amended=True,
                 amended_by_id=filing.form_id_number)
 
+        # Delete the data directory
+        shutil.rmtree(os.path.join(self.data_dir, 'var'))
+
     def download(self):
         """
         Download the archive from the IRS website.
@@ -247,13 +261,13 @@ class Command(BaseCommand):
         print 'Cleaning up archive'
         shutil.move(
             os.path.join(
-                settings.DATA_DIR,
+                self.data_dir,
                 'var/IRS/data/scripts/pofd/download/FullDataFile.txt'
             ),
             self.final_path
         )
 
-        shutil.rmtree(os.path.join(settings.DATA_DIR, 'var'))
+        shutil.rmtree(os.path.join(self.data_dir, 'var'))
         os.remove(self.zip_path)
         
     def build_mappings(self):
@@ -265,10 +279,12 @@ class Command(BaseCommand):
         self.mappings = {}
         for record_type in ('sa','sb','F8872'):
             path = os.path.join(
-                settings.BASE_DIR,
-                'irs',
+                os.path.dirname(
+                    os.path.dirname(
+                        os.path.dirname(__file__))),
                 'mappings',
                 '{}.csv'.format(record_type))
+            print path
             mapping = {}
             with open(path, 'r') as csvfile:
                 reader = csv.DictReader(csvfile)

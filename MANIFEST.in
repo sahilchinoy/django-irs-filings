@@ -1,0 +1,4 @@
+include LICENSE
+include README.md
+recursive-include irs/management *
+recursive-include irs/mappings *
