@@ -4,7 +4,6 @@ import string
 import shutil
 import zipfile
 import requests
-import probablepeople
 from decimal import Decimal
 from datetime import datetime
 from django.conf import settings
@@ -29,6 +28,7 @@ EXPENDITURES = []
 # Running list of filing ids so we don't add contributions or expenditures
 # without an associated filing
 PARSED_FILING_IDS = set()
+
 
 class RowParser:
     """
@@ -60,7 +60,7 @@ class RowParser:
             elif cell_type == 'N':
                 cell = Decimal(cell)
             else:
-                cell = cell.encode('ascii','ignore')
+                cell = cell.encode('ascii', 'ignore')
                 cell.translate(self.table, string.punctuation)
                 cell = cell.upper()
 
@@ -97,33 +97,6 @@ class RowParser:
         contribution.filing_id = contribution.form_id_number
         contribution.committee_id = contribution.EIN
 
-        # Attempt to parse the name. This doesn't work incredibly well,
-        # so it's still experimental
-        """
-        if contribution.contributor_name:
-            try:
-                parsed_name, entity_type = probablepeople.tag(
-                    contribution.contributor_name)
-                if entity_type == 'Person':
-                    contribution.entity_type = 'IND'
-                    first_name_or_initial = parsed_name.get('GivenName') or \
-                    parsed_name.get('FirstInitial')
-                    contribution.contributor_first_name = first_name_or_initial
-                    middle_initial = parsed_name.get('MiddleInitial')
-                    if middle_initial:
-                        contribution.contributor_middle_initial = \
-                        middle_initial.strip('.')
-                    contribution.contributor_last_name = parsed_name.get(
-                        'Surname')
-                elif entity_type == 'Corporation':
-                    contribution.entity_type = 'CORP'
-                    contribution.contributor_corporation_name = parsed_name.get(
-                        'CorporationName')
-
-            except probablepeople.RepeatedLabelError:
-                pass
-        """
-
         CONTRIBUTIONS.append(contribution)
 
     def create_object(self):
@@ -145,16 +118,19 @@ class RowParser:
         elif self.form_type == '2':
             filing = F8872(**self.parsed_row)
             PARSED_FILING_IDS.add(filing.form_id_number)
-            print 'Parsing filing {}'.format(filing.form_id_number)
-            committee, created = Committee.objects.get_or_create(EIN=filing.EIN)
+            print('Parsing filing {}'.format(filing.form_id_number))
+            committee, created = Committee.objects.get_or_create(
+                EIN=filing.EIN)
             if created:
                 committee.name = filing.organization_name
                 committee.save()
             filing.committee = committee
 
             filing.save()
-        
+
+
 class Command(BaseCommand):
+
     help = "Download the latest IRS filings and load them into the database"
 
     def add_arguments(self, parser):
@@ -185,14 +161,14 @@ class Command(BaseCommand):
             self.data_dir,
             'FullDataFile.txt')
 
-        print 'Flushing database'
+        print('Flushing database')
         F8872.objects.all().delete()
         Contribution.objects.all().delete()
         Expenditure.objects.all().delete()
         Committee.objects.all().delete()
 
         if options['test']:
-            print 'Using test data file'
+            print('Using test data file')
             self.final_path = os.path.join(
                 os.path.dirname(
                     os.path.dirname(
@@ -200,18 +176,18 @@ class Command(BaseCommand):
                 'tests',
                 'TestDataFile.txt')
         else:
-            print 'Downloading latest archive'
+            print('Downloading latest archive')
             self.download()
             self.unzip()
             self.clean()
 
-        print 'Parsing archive'
+        print('Parsing archive')
 
         self.build_mappings()
-        
+
         global CONTRIBUTIONS
         global EXPENDITURES
-        with open(self.final_path,'r') as raw_file:
+        with open(self.final_path, 'r') as raw_file:
             reader = csv.reader(raw_file, delimiter='|')
             for row in reader:
                 if len(CONTRIBUTIONS) > 5000:
@@ -232,7 +208,7 @@ class Command(BaseCommand):
                 except IndexError:
                     pass
 
-        print 'Resolving amendments'
+        print('Resolving amendments')
         for filing in F8872.objects.filter(amended_report_indicator=1):
             previous_filings = F8872.objects.filter(
                 committee_id=filing.EIN,
@@ -251,13 +227,13 @@ class Command(BaseCommand):
         """
         Download the archive from the IRS website.
         """
-        print 'Starting download'
+        print('Starting download')
         url = 'http://forms.irs.gov/app/pod/dataDownload/fullData'
         r = requests.get(url, stream=True)
         with open(self.zip_path, 'wb') as f:
             # This is a big file, so we download in chunks
             for chunk in r.iter_content(chunk_size=30720):
-                print 'Downloading...'
+                print('Downloading...')
                 f.write(chunk)
                 f.flush()
 
@@ -265,9 +241,9 @@ class Command(BaseCommand):
         """
         Unzip the archive.
         """
-        print 'Unzipping archive'
-        with zipfile.ZipFile(self.zip_path,'r') as zipped_archive:
-            data_file =  zipped_archive.namelist()[0]
+        print('Unzipping archive')
+        with zipfile.ZipFile(self.zip_path, 'r') as zipped_archive:
+            data_file = zipped_archive.namelist()[0]
             zipped_archive.extract(data_file, self.extract_path)
 
     def clean(self):
@@ -275,7 +251,7 @@ class Command(BaseCommand):
         Get the .txt file from within the many-layered
         directory structure, then delete the directories.
         """
-        print 'Cleaning up archive'
+        print('Cleaning up archive')
         shutil.move(
             os.path.join(
                 self.data_dir,
@@ -286,7 +262,7 @@ class Command(BaseCommand):
 
         shutil.rmtree(os.path.join(self.data_dir, 'var'))
         os.remove(self.zip_path)
-        
+
     def build_mappings(self):
         """
         Uses CSV files of field names and positions for
@@ -294,7 +270,7 @@ class Command(BaseCommand):
         for use in parsing different types of rows.
         """
         self.mappings = {}
-        for record_type in ('sa','sb','F8872'):
+        for record_type in ('sa', 'sb', 'F8872'):
             path = os.path.join(
                 os.path.dirname(
                     os.path.dirname(

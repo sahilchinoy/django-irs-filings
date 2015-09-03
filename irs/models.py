@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Committee(models.Model):
     """
     A political committee that files disclosure reports with
@@ -14,11 +15,12 @@ class Committee(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class Contribution(models.Model):
     """
     An itemization on Schedule A of a Form 8872 report.
     """
-    
+
     record_type = models.CharField(max_length=1)
     form_id_number = models.CharField(max_length=38)
     schedule_a_id = models.CharField(max_length=38)
@@ -187,7 +189,7 @@ class Expenditure(models.Model):
 
 class F8872(models.Model):
     """
-    A quarterly, midyear or end-of-year report of contributions and 
+    A quarterly, midyear or end-of-year report of contributions and
     expenditures for a political committee.
     """
 
@@ -272,7 +274,7 @@ class F8872(models.Model):
         null=True,
         blank=True)
     contact_address_line_1 = models.CharField(
-        max_length=50, 
+        max_length=50,
         null=True,
         blank=True)
     contact_address_line_2 = models.CharField(
@@ -349,7 +351,7 @@ class F8872(models.Model):
         related_name='amends')
 
     class Meta:
-        ordering = ['-end_date','-form_id_number']
+        ordering = ['-end_date', '-form_id_number']
 
     def __unicode__(self):
         return self.form_id_number
