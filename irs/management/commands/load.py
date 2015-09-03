@@ -1,9 +1,9 @@
 import os
 import csv
-import string
 import shutil
 import zipfile
 import requests
+import string
 from decimal import Decimal
 from datetime import datetime
 from django.conf import settings
@@ -42,7 +42,6 @@ class RowParser:
         self.mapping = mapping
         self.row = row
         self.parsed_row = {}
-        self.table = string.maketrans("","")
 
         self.parse_row()
         self.create_object()
@@ -53,6 +52,8 @@ class RowParser:
         determine how to clean and format the cell.
         """
         try:
+            # Get rid of non-ASCII characters
+            cell = cell.encode('ascii', 'ignore').decode()
             if cell_type == 'D':
                 cell = datetime.strptime(cell, '%Y%m%d')
             elif cell_type == 'I':
@@ -60,8 +61,6 @@ class RowParser:
             elif cell_type == 'N':
                 cell = Decimal(cell)
             else:
-                cell = cell.encode('ascii', 'ignore')
-                cell.translate(self.table, string.punctuation)
                 cell = cell.upper()
 
                 if len(cell) > 50:

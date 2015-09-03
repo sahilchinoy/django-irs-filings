@@ -53,7 +53,7 @@ class IRSFilingsTest(TestCase):
         contributions_list = filing.contributions.values_list(
             'contribution_amount',
             flat=True)
-        sum_contributions = reduce(add, contributions_list)
+        sum_contributions = sum(a for a in contributions_list)
         self.assertEqual(
             sum_contributions,
             filing.schedule_a_total)
