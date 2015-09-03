@@ -112,7 +112,7 @@ class Contribution(models.Model):
             return self.contributor_corporation_name
 
     def __unicode__(self):
-        return self.name
+        return self.contributor_name
 
 
 class Expenditure(models.Model):
@@ -180,6 +180,9 @@ class Expenditure(models.Model):
         'Committee',
         null=True,
         related_name='expenditures')
+
+    def __unicode__(self):
+        return self.recipient_name
 
 
 class F8872(models.Model):

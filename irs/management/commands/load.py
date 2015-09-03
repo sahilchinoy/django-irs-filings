@@ -192,17 +192,13 @@ class Command(BaseCommand):
         Committee.objects.all().delete()
 
         if options['test']:
-            test_data_path = os.path.join(
+            print 'Using test data file'
+            self.final_path = os.path.join(
                 os.path.dirname(
                     os.path.dirname(
                         os.path.dirname(__file__))),
                 'tests',
                 'TestDataFile.txt')
-
-            shutil.move(
-                test_data_path,
-                self.final_path
-            )
         else:
             print 'Downloading latest archive'
             self.download()
@@ -305,7 +301,6 @@ class Command(BaseCommand):
                         os.path.dirname(__file__))),
                 'mappings',
                 '{}.csv'.format(record_type))
-            print path
             mapping = {}
             with open(path, 'r') as csvfile:
                 reader = csv.DictReader(csvfile)
