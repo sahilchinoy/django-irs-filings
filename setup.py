@@ -39,7 +39,7 @@ class TestCommand(Command):
 
 setup(
     name='django-irs-filings',
-    version='0.1.1',
+    version='0.1.2',
     packages=['irs'],
     include_package_data=True,
     license='MIT',
