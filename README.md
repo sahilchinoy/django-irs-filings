@@ -1,7 +1,7 @@
 A Django app for downloading and parsing IRS campaign finance data, inspired by the [New York Times Fech library](https://github.com/NYTimes/Fech).
 
 [![PyPI version](https://badge.fury.io/py/django-irs-filings.svg)](http://badge.fury.io/py/django-irs-filings)
-[![Build Status](https://travis-ci.org/sahilchinoy/django-irs-filings.png?branch=master)](https://travis-ci.org/sahilchinoy/django-irs-filings)
+[![Build Status](https://travis-ci.org/sahilchinoy/django-irs-filings.svg?branch=master)](https://travis-ci.org/sahilchinoy/django-irs-filings)
 
 Background
 ---------------
