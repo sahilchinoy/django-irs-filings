@@ -39,7 +39,7 @@ class TestCommand(Command):
 
 setup(
     name='django-irs-filings',
-    version='0.1.2',
+    version='0.1.3',
     packages=['irs'],
     include_package_data=True,
     license='MIT',
@@ -59,11 +59,11 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    install_requires = [
+    install_requires=[
         'probablepeople>=0.3.1',
         'requests>=2.7.0',
     ],
-    cmdclass = {
+    cmdclass={
         'test': TestCommand
     },
 )

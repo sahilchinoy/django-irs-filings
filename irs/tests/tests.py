@@ -11,7 +11,7 @@ class IRSFilingsTest(TestCase):
         Setup the test database by loading a subset of a
         real filing.
         """
-        call_command('load', test=True)
+        call_command('load', test=True, verbose=True)
 
     def test_load_command(self):
         """
@@ -49,7 +49,6 @@ class IRSFilingsTest(TestCase):
         loaded correctly.
         """
         filing = F8872.objects.get(form_id_number='9637673')
-        from operator import add
         contributions_list = filing.contributions.values_list(
             'contribution_amount',
             flat=True)

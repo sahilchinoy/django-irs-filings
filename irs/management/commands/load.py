@@ -2,14 +2,16 @@ import os
 import csv
 import shutil
 import zipfile
+import logging
 import requests
-import string
+import probablepeople
 from decimal import Decimal
 from datetime import datetime
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from irs.models import F8872, Contribution, Expenditure, Committee
 
+logger = logging.getLogger(__name__)
 
 # These are terms in the raw data that don't actually mean anything
 NULL_TERMS = [
@@ -22,6 +24,8 @@ NULL_TERMS = [
     'N A',
     'N-A']
 
+# Global lists of contribution and expenditure objects that we'll use
+# for our bulk create
 CONTRIBUTIONS = []
 EXPENDITURES = []
 
@@ -96,6 +100,23 @@ class RowParser:
         contribution.filing_id = contribution.form_id_number
         contribution.committee_id = contribution.EIN
 
+        # Probabilistic name parsing: this is not incredibly accurate
+        try:
+            tagged = probablepeople.tag(contribution.contributor_name)
+            entity_type = tagged[1]
+            contribution.entity_type == entity_type
+            if entity_type == 'Person' or entity_type == 'Household':
+                contribution.contributor_first_name = tagged[0].get(
+                    'GivenName')
+                contribution.contributor_middle_name = tagged[0].get(
+                    'MiddleName') or tagged[0].get('MiddleInitial')
+                contribution.contributor_last_name = tagged[0].get('Surname')
+            elif entity_type == 'Corporation':
+                contribution.contributor_corporation_name = tagged[0].get(
+                    'CorporationName')
+        except probablepeople.RepeatedLabelError:
+            pass
+
         CONTRIBUTIONS.append(contribution)
 
     def create_object(self):
@@ -117,7 +138,7 @@ class RowParser:
         elif self.form_type == '2':
             filing = F8872(**self.parsed_row)
             PARSED_FILING_IDS.add(filing.form_id_number)
-            print('Parsing filing {}'.format(filing.form_id_number))
+            logger.debug('Parsing filing {}'.format(filing.form_id_number))
             committee, created = Committee.objects.get_or_create(
                 EIN=filing.EIN)
             if created:
@@ -140,8 +161,35 @@ class Command(BaseCommand):
             default=False,
             help='Use a subset of data for testing',
         )
+        parser.add_argument(
+            '--backup',
+            action='store_true',
+            dest='backup',
+            default=False,
+            help='Use an (outdated) backup archived in S3',
+        )
+        parser.add_argument(
+            '--verbose',
+            action='store_true',
+            dest='verbose',
+            default=False,
+            help='More logging messages',
+        )
 
     def handle(self, *args, **options):
+        # Configure the logger
+        FORMAT = '%(asctime)s %(levelname)s: %(message)s'
+        if options['verbose']:
+            logging.basicConfig(
+                format=FORMAT,
+                datefmt='%I:%M:%S',
+                level=logging.DEBUG)
+        else:
+            logging.basicConfig(
+                format=FORMAT,
+                datefmt='%I:%M:%S',
+                level=logging.INFO)
+
         # Create a temporary data directory
         self.data_dir = os.path.join(
             settings.BASE_DIR,
@@ -160,30 +208,35 @@ class Command(BaseCommand):
             self.data_dir,
             'FullDataFile.txt')
 
-        print('Flushing database')
-        F8872.objects.all().delete()
-        Contribution.objects.all().delete()
-        Expenditure.objects.all().delete()
-        Committee.objects.all().delete()
-
         if options['test']:
-            print('Using test data file')
+            logger.info('Using test data file')
             self.final_path = os.path.join(
                 os.path.dirname(
                     os.path.dirname(
                         os.path.dirname(__file__))),
                 'tests',
                 'TestDataFile.txt')
+        elif options['backup']:
+            logger.info('Using backup file')
+            self.download_from_backup()
         else:
-            print('Downloading latest archive')
+            logger.info('Downloading latest archive')
             self.download()
             self.unzip()
             self.clean()
 
-        print('Parsing archive')
+        # Check that this file actually has data in it
+        if os.stat(self.final_path).st_size == 0:
+            raise Exception('The file to be loaded is empty!')
 
+        logger.info('Flushing database')
+        F8872.objects.all().delete()
+        Contribution.objects.all().delete()
+        Expenditure.objects.all().delete()
+        Committee.objects.all().delete()
+
+        logger.info('Parsing archive')
         self.build_mappings()
-
         global CONTRIBUTIONS
         global EXPENDITURES
         with open(self.final_path, 'r') as raw_file:
@@ -207,7 +260,7 @@ class Command(BaseCommand):
                 except IndexError:
                     pass
 
-        print('Resolving amendments')
+        logger.info('Resolving amendments')
         for filing in F8872.objects.filter(amended_report_indicator=1):
             previous_filings = F8872.objects.filter(
                 committee_id=filing.EIN,
@@ -226,13 +279,27 @@ class Command(BaseCommand):
         """
         Download the archive from the IRS website.
         """
-        print('Starting download')
         url = 'http://forms.irs.gov/app/pod/dataDownload/fullData'
         r = requests.get(url, stream=True)
         with open(self.zip_path, 'wb') as f:
             # This is a big file, so we download in chunks
             for chunk in r.iter_content(chunk_size=30720):
-                print('Downloading...')
+                logger.debug('Downloading...')
+                f.write(chunk)
+                f.flush()
+
+    def download_from_backup(self):
+        """
+        Download a backed-up (but slightly outdated) version
+        of the text data file.
+        """
+        url = 'https://s3-us-west-1.amazonaws.com/irs-itemizer/' \
+            'FullDataFile.txt'
+        r = requests.get(url, stream=True)
+        with open(self.final_path, 'wb') as f:
+            # This is a big file, so we download in chunks
+            for chunk in r.iter_content(chunk_size=30720):
+                logger.debug('Downloading...')
                 f.write(chunk)
                 f.flush()
 
@@ -240,7 +307,7 @@ class Command(BaseCommand):
         """
         Unzip the archive.
         """
-        print('Unzipping archive')
+        logger.info('Unzipping archive')
         with zipfile.ZipFile(self.zip_path, 'r') as zipped_archive:
             data_file = zipped_archive.namelist()[0]
             zipped_archive.extract(data_file, self.extract_path)
@@ -250,7 +317,7 @@ class Command(BaseCommand):
         Get the .txt file from within the many-layered
         directory structure, then delete the directories.
         """
-        print('Cleaning up archive')
+        logger.info('Cleaning up archive')
         shutil.move(
             os.path.join(
                 self.data_dir,

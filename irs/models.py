@@ -95,8 +95,8 @@ class Contribution(models.Model):
         max_length=70,
         null=True,
         blank=True)
-    contributor_middle_initial = models.CharField(
-        max_length=50,
+    contributor_middle_name = models.CharField(
+        max_length=70,
         null=True,
         blank=True)
     contributor_corporation_name = models.CharField(
