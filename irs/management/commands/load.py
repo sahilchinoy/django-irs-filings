@@ -183,7 +183,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--people',
             action='store_true',
-            dest='pp',
+            dest='people',
             default=False,
             help='Use probabilistic name parsing (slow)',
         )
@@ -254,7 +254,7 @@ class Command(BaseCommand):
         global EXPENDITURES
         global PARSE_PEOPLE
 
-        if options['pp']:
+        if options['people']:
             PARSE_PEOPLE = True
 
         with open(self.final_path, 'r') as raw_file:
