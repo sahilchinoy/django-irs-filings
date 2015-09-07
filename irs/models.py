@@ -84,7 +84,7 @@ class Contribution(models.Model):
 
     # For probabilistic people parsing
     entity_type = models.CharField(
-        max_length=4,
+        max_length=20,
         null=True,
         blank=True)
     contributor_first_name = models.CharField(
@@ -103,15 +103,6 @@ class Contribution(models.Model):
         max_length=70,
         null=True,
         blank=True)
-
-    @property
-    def name(self):
-        if self.entity_type == 'IND':
-            return '{} {}'.format(
-                self.contributor_first_name,
-                self.contributor_last_name)
-        elif self.entity_type == 'CORP':
-            return self.contributor_corporation_name
 
     def __unicode__(self):
         return self.contributor_name

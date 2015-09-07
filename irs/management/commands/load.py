@@ -104,7 +104,7 @@ class RowParser:
         try:
             tagged = probablepeople.tag(contribution.contributor_name)
             entity_type = tagged[1]
-            contribution.entity_type == entity_type
+            contribution.entity_type = entity_type
             if entity_type == 'Person' or entity_type == 'Household':
                 contribution.contributor_first_name = tagged[0].get(
                     'GivenName')
