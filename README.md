@@ -12,7 +12,7 @@ The [archive](http://forms.irs.gov/app/pod/dataDownload/dataDownload) is updated
 Getting started
 ---------------
 
-Install `django-irs-filings` as an app in a Django project.
+Install it.
 
 ```bash
 $ pip install django-irs-filings
@@ -20,8 +20,12 @@ $ pip install django-irs-filings
 
 Add `irs` to your list of `INSTALLED_APPS` in `settings.py`.
 
-```bash
-$ vim project/settings.py
+```python
+INSTALLED_APPS = (
+    ...
+    'irs',
+    ...
+)
 ```
 
 Migrate your database.
@@ -35,3 +39,11 @@ Finally, call the `load` command. This will download the latest zipped archive f
 ```bash
 $ python manage.py load
 ```
+
+Some options for `load`:
+
+Option name | Description
+----------- | -----------
+`--test` | Uses a small subset of real data for testing
+`--backup` | Loads from an [outdated backup file](https://s3-us-west-1.amazonaws.com/irs-itemizer/FullDataFile.txt)
+`--verbose` | Logs filing numbers being parsed to the console
