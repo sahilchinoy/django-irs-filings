@@ -44,6 +44,7 @@ Some options for `load`:
 
 Option name | Description
 ----------- | -----------
+`--people` | Uses [probablepeople](https://github.com/datamade/probablepeople) for name parsing
 `--test` | Uses a small subset of real data for testing
 `--backup` | Loads from an [outdated backup file](https://s3-us-west-1.amazonaws.com/irs-itemizer/FullDataFile.txt)
 `--verbose` | Logs filing numbers being parsed to the console

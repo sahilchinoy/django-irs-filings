@@ -29,6 +29,9 @@ NULL_TERMS = [
 CONTRIBUTIONS = []
 EXPENDITURES = []
 
+# Whether to tag contributor names
+PARSE_PEOPLE = False
+
 # Running list of filing ids so we don't add contributions or expenditures
 # without an associated filing
 PARSED_FILING_IDS = set()
@@ -101,21 +104,23 @@ class RowParser:
         contribution.committee_id = contribution.EIN
 
         # Probabilistic name parsing: this is not incredibly accurate
-        try:
-            tagged = probablepeople.tag(contribution.contributor_name)
-            entity_type = tagged[1]
-            contribution.entity_type = entity_type
-            if entity_type == 'Person' or entity_type == 'Household':
-                contribution.contributor_first_name = tagged[0].get(
-                    'GivenName')
-                contribution.contributor_middle_name = tagged[0].get(
-                    'MiddleName') or tagged[0].get('MiddleInitial')
-                contribution.contributor_last_name = tagged[0].get('Surname')
-            elif entity_type == 'Corporation':
-                contribution.contributor_corporation_name = tagged[0].get(
-                    'CorporationName')
-        except probablepeople.RepeatedLabelError:
-            pass
+        if PARSE_PEOPLE and contribution.contributor_name:
+            try:
+                tagged = probablepeople.tag(contribution.contributor_name)
+                entity_type = tagged[1]
+                contribution.entity_type = entity_type
+                if entity_type == 'Person' or entity_type == 'Household':
+                    contribution.contributor_first_name = tagged[0].get(
+                        'GivenName')
+                    contribution.contributor_middle_name = tagged[0].get(
+                        'MiddleName') or tagged[0].get('MiddleInitial')
+                    contribution.contributor_last_name = tagged[0].get(
+                        'Surname')
+                elif entity_type == 'Corporation':
+                    contribution.contributor_corporation_name = tagged[0].get(
+                        'CorporationName')
+            except probablepeople.RepeatedLabelError:
+                pass
 
         CONTRIBUTIONS.append(contribution)
 
@@ -174,6 +179,13 @@ class Command(BaseCommand):
             dest='verbose',
             default=False,
             help='More logging messages',
+        )
+        parser.add_argument(
+            '--people',
+            action='store_true',
+            dest='pp',
+            default=False,
+            help='Use probabilistic name parsing (slow)',
         )
 
     def handle(self, *args, **options):
@@ -237,8 +249,14 @@ class Command(BaseCommand):
 
         logger.info('Parsing archive')
         self.build_mappings()
+
         global CONTRIBUTIONS
         global EXPENDITURES
+        global PARSE_PEOPLE
+
+        if options['pp']:
+            PARSE_PEOPLE = True
+
         with open(self.final_path, 'r') as raw_file:
             reader = csv.reader(raw_file, delimiter='|')
             for row in reader:

@@ -11,7 +11,7 @@ class IRSFilingsTest(TestCase):
         Setup the test database by loading a subset of a
         real filing.
         """
-        call_command('load', test=True, verbose=True)
+        call_command('load', test=True, verbose=True, people=True)
 
     def test_load_command(self):
         """
