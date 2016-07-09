@@ -22,10 +22,10 @@ class IRSFilingsTest(TestCase):
             65)
         self.assertEqual(
             Contribution.objects.count(),
-            5001)
+            5911)
         self.assertEqual(
             Expenditure.objects.count(),
-            5001)
+            5068)
         self.assertEqual(
             Committee.objects.count(),
             49)
