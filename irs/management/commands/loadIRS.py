@@ -1,6 +1,7 @@
 import os
 import io
 import csv
+import sys
 import logging
 from decimal import Decimal
 from datetime import datetime
@@ -191,8 +192,17 @@ class Command(IRSCommand):
         global CONTRIBUTIONS
         global EXPENDITURES
 
-        with io.open(self.final_path, 'rU', encoding="ISO-8859-1") as raw_file:
-            reader = csv.reader(raw_file, delimiter='|')
+        with io.open(self.final_path, 'rU', encoding='ISO-8859-1') as raw_file:
+            # Deal with badly encoded files in Python 2
+            if sys.version_info < (3, 0):
+                def reencode(file):
+                    for line in file:
+                        yield line.decode('ISO-8859-1').encode('utf-8')
+
+                reader = csv.reader(reencode(open(self.final_path, 'rU')),
+                                    delimiter='|')
+            else:
+                reader = csv.reader(raw_file, delimiter='|')
 
             for row in reader:
                 # Use bulk_create to save contributions and expenditures
