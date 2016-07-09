@@ -29,7 +29,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-ROOT_URLCONF = 'project.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
     {
@@ -62,15 +62,6 @@ USE_L10N = True
 
 USE_TZ = False
 
-DATABASES = {
-     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'irs_test',
-        'USER': 'sahilchinoy',
-        'HOST': 'localhost',
-     }
-}
-
 DEBUG = True
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
@@ -85,3 +76,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+try:
+    from settings_local import *
+except ImportError:
+    pass

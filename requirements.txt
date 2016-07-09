@@ -1,0 +1,11 @@
+Django
+requests
+psycopg2
+
+# Testing
+agate
+subsample
+flake8
+
+# Packaging
+wheel

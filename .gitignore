@@ -1,3 +1,5 @@
 .DS_Store
 *.pyc
 *.egg-*
+data
+settings_local.py

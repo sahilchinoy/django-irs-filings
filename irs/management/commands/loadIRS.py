@@ -1,14 +1,10 @@
 import os
+import io
 import csv
-import shutil
-import zipfile
 import logging
-import requests
-import probablepeople
 from decimal import Decimal
 from datetime import datetime
-from django.conf import settings
-from django.core.management.base import BaseCommand
+from irs.management.commands import IRSCommand
 from irs.models import F8872, Contribution, Expenditure, Committee
 
 logger = logging.getLogger(__name__)
@@ -28,9 +24,6 @@ NULL_TERMS = [
 # for our bulk create
 CONTRIBUTIONS = []
 EXPENDITURES = []
-
-# Whether to tag contributor names
-PARSE_PEOPLE = False
 
 # Running list of filing ids so we don't add contributions or expenditures
 # without an associated filing
@@ -92,41 +85,19 @@ class RowParser:
             parsed_cell = self.clean_cell(cell, field_type)
             self.parsed_row[field_name] = parsed_cell
 
-    def create_contribution(self):
-        contribution = Contribution(**self.parsed_row)
-
-        # If there's no filing in the database for this contribution
-        if contribution.form_id_number not in PARSED_FILING_IDS:
-            # Skip this contribution
-            return
-
-        contribution.filing_id = contribution.form_id_number
-        contribution.committee_id = contribution.EIN
-
-        # Probabilistic name parsing: this is not incredibly accurate
-        if PARSE_PEOPLE and contribution.contributor_name:
-            try:
-                tagged = probablepeople.tag(contribution.contributor_name)
-                entity_type = tagged[1]
-                contribution.entity_type = entity_type
-                if entity_type == 'Person' or entity_type == 'Household':
-                    contribution.contributor_first_name = tagged[0].get(
-                        'GivenName')
-                    contribution.contributor_middle_name = tagged[0].get(
-                        'MiddleName') or tagged[0].get('MiddleInitial')
-                    contribution.contributor_last_name = tagged[0].get(
-                        'Surname')
-                elif entity_type == 'Corporation':
-                    contribution.contributor_corporation_name = tagged[0].get(
-                        'CorporationName')
-            except probablepeople.RepeatedLabelError:
-                pass
-
-        CONTRIBUTIONS.append(contribution)
-
     def create_object(self):
         if self.form_type == 'A':
-            self.create_contribution()
+            contribution = Contribution(**self.parsed_row)
+
+            # If there's no filing in the database for this contribution
+            if contribution.form_id_number not in PARSED_FILING_IDS:
+                # Skip this contribution
+                return
+
+            contribution.filing_id = contribution.form_id_number
+            contribution.committee_id = contribution.EIN
+
+            CONTRIBUTIONS.append(contribution)
         elif self.form_type == 'B':
             expenditure = Expenditure(**self.parsed_row)
 
@@ -154,9 +125,9 @@ class RowParser:
             filing.save()
 
 
-class Command(BaseCommand):
+class Command(IRSCommand):
 
-    help = "Download the latest IRS filings and load them into the database"
+    help = "Load an IRS archive into the database"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -167,28 +138,16 @@ class Command(BaseCommand):
             help='Use a subset of data for testing',
         )
         parser.add_argument(
-            '--backup',
-            action='store_true',
-            dest='backup',
-            default=False,
-            help='Use an (outdated) backup archived in S3',
-        )
-        parser.add_argument(
             '--verbose',
             action='store_true',
             dest='verbose',
             default=False,
             help='More logging messages',
         )
-        parser.add_argument(
-            '--people',
-            action='store_true',
-            dest='people',
-            default=False,
-            help='Use probabilistic name parsing (slow)',
-        )
 
     def handle(self, *args, **options):
+        super(Command, self).handle(*args, **options)
+
         # Configure the logger
         FORMAT = '%(asctime)s %(levelname)s: %(message)s'
         if options['verbose']:
@@ -202,24 +161,7 @@ class Command(BaseCommand):
                 datefmt='%I:%M:%S',
                 level=logging.INFO)
 
-        # Create a temporary data directory
-        self.data_dir = os.path.join(
-            settings.BASE_DIR,
-            'data')
-        if not os.path.exists(self.data_dir):
-            os.makedirs(self.data_dir)
-        # Where to download the raw zipped archive
-        self.zip_path = os.path.join(
-            self.data_dir,
-            'zipped_archive.zip')
-        # Where to extract the archive
-        self.extract_path = os.path.join(
-            self.data_dir)
-        # Where to store the data file
-        self.final_path = os.path.join(
-            self.data_dir,
-            'FullDataFile.txt')
-
+        # Path to downloaded file
         if options['test']:
             logger.info('Using test data file')
             self.final_path = os.path.join(
@@ -228,14 +170,10 @@ class Command(BaseCommand):
                         os.path.dirname(__file__))),
                 'tests',
                 'TestDataFile.txt')
-        elif options['backup']:
-            logger.info('Using backup file')
-            self.download_from_backup()
         else:
-            logger.info('Downloading latest archive')
-            self.download()
-            self.unzip()
-            self.clean()
+            self.final_path = os.path.join(
+                self.data_dir,
+                'FullDataFile.txt')
 
         # Check that this file actually has data in it
         if os.stat(self.final_path).st_size == 0:
@@ -252,14 +190,13 @@ class Command(BaseCommand):
 
         global CONTRIBUTIONS
         global EXPENDITURES
-        global PARSE_PEOPLE
 
-        if options['people']:
-            PARSE_PEOPLE = True
-
-        with open(self.final_path, 'r') as raw_file:
+        with io.open(self.final_path, 'rU', encoding="ISO-8859-1") as raw_file:
             reader = csv.reader(raw_file, delimiter='|')
+
             for row in reader:
+                # Use bulk_create to save contributions and expenditures
+                # 5000 at a time
                 if len(CONTRIBUTIONS) > 5000:
                     Contribution.objects.bulk_create(CONTRIBUTIONS)
                     CONTRIBUTIONS = []
@@ -278,6 +215,10 @@ class Command(BaseCommand):
                 except IndexError:
                     pass
 
+            # Save the remaining contributions and expenditures
+            Contribution.objects.bulk_create(CONTRIBUTIONS)
+            Expenditure.objects.bulk_create(EXPENDITURES)
+
         logger.info('Resolving amendments')
         for filing in F8872.objects.filter(amended_report_indicator=1):
             previous_filings = F8872.objects.filter(
@@ -289,63 +230,6 @@ class Command(BaseCommand):
             previous_filings.update(
                 is_amended=True,
                 amended_by_id=filing.form_id_number)
-
-        # Delete the data directory
-        shutil.rmtree(os.path.join(self.data_dir))
-
-    def download(self):
-        """
-        Download the archive from the IRS website.
-        """
-        url = 'http://forms.irs.gov/app/pod/dataDownload/fullData'
-        r = requests.get(url, stream=True)
-        with open(self.zip_path, 'wb') as f:
-            # This is a big file, so we download in chunks
-            for chunk in r.iter_content(chunk_size=30720):
-                logger.debug('Downloading...')
-                f.write(chunk)
-                f.flush()
-
-    def download_from_backup(self):
-        """
-        Download a backed-up (but slightly outdated) version
-        of the text data file.
-        """
-        url = 'https://s3-us-west-1.amazonaws.com/irs-itemizer/' \
-            'FullDataFile.txt'
-        r = requests.get(url, stream=True)
-        with open(self.final_path, 'wb') as f:
-            # This is a big file, so we download in chunks
-            for chunk in r.iter_content(chunk_size=30720):
-                logger.debug('Downloading...')
-                f.write(chunk)
-                f.flush()
-
-    def unzip(self):
-        """
-        Unzip the archive.
-        """
-        logger.info('Unzipping archive')
-        with zipfile.ZipFile(self.zip_path, 'r') as zipped_archive:
-            data_file = zipped_archive.namelist()[0]
-            zipped_archive.extract(data_file, self.extract_path)
-
-    def clean(self):
-        """
-        Get the .txt file from within the many-layered
-        directory structure, then delete the directories.
-        """
-        logger.info('Cleaning up archive')
-        shutil.move(
-            os.path.join(
-                self.data_dir,
-                'var/IRS/data/scripts/pofd/download/FullDataFile.txt'
-            ),
-            self.final_path
-        )
-
-        shutil.rmtree(os.path.join(self.data_dir, 'var'))
-        os.remove(self.zip_path)
 
     def build_mappings(self):
         """

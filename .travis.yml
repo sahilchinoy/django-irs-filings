@@ -11,8 +11,7 @@ python:
  - "3.4"
 # List the versions of Django you'd like to test against
 env:
- - DJANGO_VERSION=1.7.9
- - DJANGO_VERSION=1.8.3
+ - DJANGO_VERSION=1.9.7
 # Tell it the things it will need to install when it boots
 install:
    # Install whatever version of Django that's listed above
